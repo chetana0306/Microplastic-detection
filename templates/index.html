@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Microplastic Detection</title>
+
+<style>
+
+body{
+background:#0f2027;
+font-family:Arial;
+color:white;
+text-align:center;
+padding:100px;
+}
+
+input{
+margin:20px;
+}
+
+button{
+padding:12px 25px;
+background:#00c6ff;
+border:none;
+color:white;
+border-radius:6px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Microplastic Detection System</h1>
+
+<form action="/detect" method="post" enctype="multipart/form-data">
+
+<input type="file" name="image" required>
+
+<br>
+
+<button type="submit">Upload Image</button>
+
+</form>
+
+</body>
+</html>

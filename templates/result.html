@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Microplastic Detection Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+    background:#0f2027;
+    color:white;
+    font-family:Arial, sans-serif;
+    padding:30px;
+}
+
+h1{
+    text-align:center;
+}
+
+.container{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:25px;
+    margin-top:25px;
+}
+
+.card{
+    background:#1c2e3a;
+    padding:20px;
+    border-radius:10px;
+}
+
+img{
+    width:100%;
+    border-radius:8px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th, td{
+    padding:10px;
+    border-bottom:1px solid #555;
+    text-align:center;
+}
+
+.bottom{
+    text-align:center;
+    margin-top:40px;
+}
+
+button{
+    padding:12px 25px;
+    background:#00c6ff;
+    border:none;
+    color:white;
+    border-radius:6px;
+    margin:10px;
+    cursor:pointer;
+}
+
+/* chart size control */
+
+#gaugeChart{
+    max-width:200px;
+    max-height:200px;
+    margin:auto;
+}
+
+#particleChart{
+    max-height:260px;
+}
+
+/* hidden data */
+
+.hidden{
+    display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<h1>Microplastic Detection Dashboard</h1>
+
+<!-- Hidden values passed from Flask -->
+<div id="countData" class="hidden">{{ count }}</div>
+<div id="colorData" class="hidden">{{ color }}</div>
+<div id="labelsData" class="hidden">{{ labels }}</div>
+<div id="areasData" class="hidden">{{ areas }}</div>
+
+<div class="container">
+
+<div class="card">
+
+<h2>Detection Summary</h2>
+
+<p><b>Particles Detected:</b> {{ count }}</p>
+
+<p>
+<b>Contamination Level:</b>
+<span id="contaminationLevel">{{ contamination }}</span>
+</p>
+
+<p>Average Size: {{ avg_area }}</p>
+<p>Largest Particle: {{ max_area }}</p>
+<p>Smallest Particle: {{ min_area }}</p>
+
+<h3>Contamination Gauge</h3>
+<canvas id="gaugeChart"></canvas>
+
+</div>
+
+<div class="card">
+
+<h2>Particle Size Chart</h2>
+<canvas id="particleChart"></canvas>
+
+</div>
+
+<div class="card">
+
+<h2>Detected Image</h2>
+<img src="{{ image_path }}" alt="Detected particles">
+
+</div>
+
+<div class="card">
+
+<h2>Particle Data</h2>
+
+<table>
+
+<tr>
+<th>ID</th>
+<th>Area</th>
+</tr>
+
+{% for row in table %}
+
+<tr>
+<td>{{ row.Particle_ID }}</td>
+<td>{{ row.Area }}</td>
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+</div>
+
+<div class="bottom">
+
+<a href="/"><button>Upload New Image</button></a>
+<a href="/report"><button>Download PDF Report</button></a>
+
+</div>
+
+<script>
+
+/* read data from hidden elements */
+
+let particleCount = parseInt(document.getElementById("countData").innerText);
+let color = document.getElementById("colorData").innerText;
+
+let labelsText = document.getElementById("labelsData").innerText;
+let areasText = document.getElementById("areasData").innerText;
+
+/* convert text lists to arrays */
+
+labelsText = labelsText.replace("[","").replace("]","");
+areasText = areasText.replace("[","").replace("]","");
+
+let labels = labelsText.split(",");
+let areas = areasText.split(",").map(Number);
+
+/* apply contamination color */
+
+document.getElementById("contaminationLevel").style.color = color;
+document.getElementById("contaminationLevel").style.fontWeight = "bold";
+
+/* Particle Size Chart */
+
+new Chart(
+document.getElementById("particleChart"),
+{
+type:"bar",
+data:{
+labels:labels,
+datasets:[{
+label:"Particle Area",
+data:areas,
+backgroundColor:"skyblue"
+}]
+},
+options:{
+responsive:true,
+scales:{
+y:{
+beginAtZero:true
+}
+}
+}
+}
+);
+
+/* Contamination Gauge */
+
+let maxValue = 30;
+
+new Chart(
+document.getElementById("gaugeChart"),
+{
+type:"doughnut",
+data:{
+datasets:[{
+data:[particleCount, maxValue-particleCount],
+backgroundColor:[color,"#2c3e50"]
+}]
+},
+options:{
+cutout:"70%",
+plugins:{
+legend:{display:false}
+}
+}
+}
+);
+
+</script>
+
+</body>
+</html>
